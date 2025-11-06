@@ -119,7 +119,7 @@ export default function PandaSkiingPage() {
           isDark 
             ? "bg-black/95 border-green-400/30 text-green-400"
             : "bg-white/95 border-gray-900/30 text-gray-900"
-        } backdrop-blur-sm`}>
+        } backdrop-blur-sm z-50`}>
           <div className="container mx-auto px-4 py-3">
             <div className={`font-mono text-xs md:text-sm leading-relaxed ${
               isDark ? "text-green-400" : "text-gray-900"
@@ -140,7 +140,7 @@ export default function PandaSkiingPage() {
       )}
 
       {/* 主题切换和连接钱包按钮 */}
-      <div className={`absolute right-4 md:right-6 flex items-center gap-2 md:gap-3 z-50 transition-all duration-300 ${
+      <div className={`absolute right-4 md:right-6 flex items-center gap-2 md:gap-3 z-40 transition-all duration-300 ${
         showHighPriceAlert ? "top-16 md:top-20" : "top-4 md:top-6"
       }`}>
         <Button

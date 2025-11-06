@@ -10,11 +10,11 @@ export const queryClient = new QueryClient();
 const projectId = "c529abdccac8e63d92a17d8c03e984ee";
 
 // BSC网络配置
-const networks = [bsc];
+const networks = [bsc] as const;
 
 // 创建wagmi适配器
 export const wagmiAdapter = new WagmiAdapter({
-  networks,
+  networks: networks as any,
   projectId,
   ssr: false, // 如果使用SSR则设为true
 });
@@ -22,7 +22,7 @@ export const wagmiAdapter = new WagmiAdapter({
 // 创建AppKit实例
 export const modal = createAppKit({
   adapters: [wagmiAdapter],
-  networks,
+  networks: networks as any,
   projectId,
   metadata: {
     name: "PandaSkiing",

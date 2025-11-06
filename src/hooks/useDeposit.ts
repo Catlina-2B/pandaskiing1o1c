@@ -86,7 +86,7 @@ export function useDeposit() {
         abi: ERC20_ABI,
         functionName: 'approve',
         args: [contractAddress, amount],
-      });
+      } as any);
 
       // 等待交易确认
       console.log('授权交易已发送:', hash);
@@ -150,7 +150,7 @@ export function useDeposit() {
         address: contractAddress as `0x${string}`,
         abi: PROGRESSIVE_DEPOSIT_ABI,
         functionName: 'deposit',
-      });
+      } as any);
 
       console.log('充值交易已发送:', hash);
 

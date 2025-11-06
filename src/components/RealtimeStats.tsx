@@ -11,7 +11,7 @@ export default function RealtimeStats({ className = '' }: RealtimeStatsProps) {
   const { theme } = useSystemTheme();
   const isDark = theme === 'dark';
   
-  const { globalStats, loading, error } = useRealTimeData(15000); // 15秒刷新
+  const { globalStats, loading, error } = useRealTimeData();
   const { data: recentDeposits } = useRecentDeposits(5);
   
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -68,7 +68,7 @@ export default function RealtimeStats({ className = '' }: RealtimeStatsProps) {
         <div className="text-center">
           <p className="text-red-500 mb-2">数据加载失败</p>
           <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-            {error}
+            {error || '未知错误'}
           </p>
         </div>
       </div>

@@ -229,12 +229,76 @@ export function useAllDeposits(limit: number = 1000) {
 }
 
 // 图表数据处理Hook
-export function useChartData(deposits: DepositEvent[] | undefined): ChartDataPoint[] {
-  return deposits?.map(deposit => ({
-    timestamp: parseInt(deposit.timestamp) * 1000,
-    value: parseFloat(deposit.amount) / 1e18,
-    label: `#${deposit.depositNumber}: ${formatAmount(deposit.amount)}`,
-  })) || [];
+export function useChartData(options: { timeRange: TimeRange; dataType: ChartDataType }) {
+  const { timeRange, dataType } = options;
+  
+  // 根据时间范围选择合适的数据源
+  const minuteStats = useMinuteStats(60);
+  const hourlyStats = useHourlyStats(168);
+  const allDeposits = useAllDeposits(1000);
+
+  // 根据时间范围和数据类型选择数据
+  const { data: rawData, isLoading, error } = (() => {
+    switch (timeRange) {
+      case '1H':
+        return minuteStats;
+      case '1D':
+        return hourlyStats;
+      case '7D':
+      case '30D':
+      case 'ALL':
+        return allDeposits;
+      default:
+        return allDeposits;
+    }
+  })();
+
+  // 处理数据
+  const chartData: ChartDataPoint[] = (() => {
+    if (!rawData || rawData.length === 0) return [];
+
+    // 检查数据类型
+    if ('depositNumber' in rawData[0]) {
+      // DepositEvent 类型
+      const deposits = rawData as DepositEvent[];
+      return deposits.map(deposit => ({
+        timestamp: parseInt(deposit.timestamp) * 1000,
+        value: parseFloat(deposit.amount) / 1e18,
+        label: `#${deposit.depositNumber}: ${formatAmount(deposit.amount)}`,
+      }));
+    } else {
+      // MinuteStats 或 HourlyStats 类型
+      const stats = rawData as (MinuteStats | HourlyStats)[];
+      return stats.map(stat => {
+        let value = 0;
+        switch (dataType) {
+          case 'cumulativeAmount':
+            value = parseFloat(stat.cumulativeAmount) / 1e18;
+            break;
+          case 'cumulativeDeposits':
+            value = parseInt(stat.cumulativeDeposits);
+            break;
+          case 'depositAmount':
+            value = parseFloat(stat.depositAmount) / 1e18;
+            break;
+          case 'depositCount':
+            value = parseInt(stat.depositCount);
+            break;
+        }
+        return {
+          timestamp: parseInt(stat.timestamp) * 1000,
+          value,
+          label: formatAmount(value.toString()),
+        };
+      }).reverse(); // 反转以按时间正序排列
+    }
+  })();
+
+  return {
+    data: chartData,
+    loading: isLoading,
+    error: error ? (error as Error).message : null,
+  };
 }
 
 // 实时数据Hook（组合多个查询）
@@ -246,7 +310,7 @@ export function useRealTimeData() {
     globalStats: globalStats.data,
     recentDeposits: recentDeposits.data || [],
     loading: globalStats.isLoading || recentDeposits.isLoading,
-    error: globalStats.error || recentDeposits.error,
+    error: globalStats.error ? (globalStats.error as Error).message : recentDeposits.error ? (recentDeposits.error as Error).message : null,
     isError: globalStats.isError || recentDeposits.isError,
   };
 }

@@ -1,0 +1,255 @@
+import { useQuery } from '@tanstack/react-query';
+import { gql, request } from 'graphql-request';
+import { useState, useEffect, useCallback } from 'react';
+import { 
+  GlobalStats, 
+  MinuteStats, 
+  HourlyStats, 
+  DailyStats,
+  DepositEvent,
+  ChartDataPoint,
+  TimeRange,
+  ChartDataType,
+  QueryOptions,
+  SubgraphResponse 
+} from '@/types/subgraph';
+import { getSubgraphEndpoint } from '@/config/subgraph';
+
+// Subgraph 配置
+const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/91526/progressive-deposit/version/latest';
+const HEADERS = { Authorization: 'Bearer 2fc6b77f0f54ced68b9ebb7d695e549a' };
+
+// GraphQL 查询 - 根据实际 schema 定义
+// 简化的全局统计查询，尝试不同的方法
+const GLOBAL_STATS_QUERY = gql`
+  query GetGlobalStats {
+    globalStats(first: 5) {
+      id
+      totalDeposits
+      totalAmount
+      totalWithdrawn
+      uniqueDepositors
+      lastDepositTimestamp
+      lastUpdateTimestamp
+    }
+  }
+`;
+
+const RECENT_DEPOSITS_QUERY = gql`
+  query GetRecentDeposits($first: Int!) {
+    depositeds(first: $first, orderBy: timestamp, orderDirection: desc) {
+      id
+      depositor
+      amount
+      depositNumber
+      timestamp
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+  }
+`;
+
+const DEPOSIT_AMOUNT_SETS_QUERY = gql`
+  query GetDepositAmountSets($first: Int!) {
+    depositAmountSets(first: $first, orderBy: blockNumber, orderDirection: desc) {
+      id
+      depositNumber
+      amount
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+  }
+`;
+
+const MINUTE_STATS_QUERY = gql`
+  query GetMinuteStats($first: Int!) {
+    minuteStats(first: $first, orderBy: timestamp, orderDirection: desc) {
+      id
+      timestamp
+      depositCount
+      depositAmount
+      withdrawAmount
+      uniqueDepositors
+      cumulativeDeposits
+      cumulativeAmount
+    }
+  }
+`;
+
+const HOURLY_STATS_QUERY = gql`
+  query GetHourlyStats($first: Int!) {
+    hourlyStats(first: $first, orderBy: timestamp, orderDirection: desc) {
+      id
+      timestamp
+      depositCount
+      depositAmount
+      withdrawAmount
+      uniqueDepositors
+      cumulativeDeposits
+      cumulativeAmount
+    }
+  }
+`;
+
+const ALL_DEPOSITS_QUERY = gql`
+  query GetAllDeposits($first: Int!) {
+    depositeds(first: $first, orderBy: depositNumber, orderDirection: asc) {
+      id
+      depositor
+      amount
+      depositNumber
+      timestamp
+      blockNumber
+      blockTimestamp
+      transactionHash
+    }
+  }
+`;
+
+// 工具函数
+function formatAddress(address: string): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+function formatAmount(amount: string): string {
+  const eth = parseFloat(amount) / 1e18;
+  if (eth >= 1000) return `${(eth / 1000).toFixed(1)}K ETH`;
+  if (eth >= 1) return `${eth.toFixed(2)} ETH`;
+  return `${eth.toFixed(4)} ETH`;
+}
+
+function formatTime(timestamp: string): string {
+  const date = new Date(parseInt(timestamp) * 1000);
+  return date.toLocaleTimeString('zh-CN', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
+// 使用 React Query 的 Hooks
+
+// 全局统计数据Hook
+export function useGlobalStats() {
+  return useQuery({
+    queryKey: ['globalStats'],
+    queryFn: async () => {
+      try {
+        const response = await request(SUBGRAPH_URL, GLOBAL_STATS_QUERY, {}, HEADERS);
+        console.log('Global stats response:', response);
+        // globalStats 可能返回数组或单个对象
+        if (Array.isArray(response.globalStats)) {
+          return response.globalStats.length > 0 ? response.globalStats[0] as GlobalStats : null;
+        } else {
+          return response.globalStats as GlobalStats | null;
+        }
+      } catch (error) {
+        console.warn('Global stats query failed:', error);
+        return null;
+      }
+    },
+    staleTime: 30 * 1000, // 30秒
+    refetchInterval: 30 * 1000, // 30秒自动刷新
+    retry: false, // 不重试，因为可能还没有全局统计数据
+  });
+}
+
+// 最近充值记录Hook
+export function useRecentDeposits(limit: number = 10) {
+  return useQuery({
+    queryKey: ['recentDeposits', limit],
+    queryFn: async () => {
+      const response = await request(SUBGRAPH_URL, RECENT_DEPOSITS_QUERY, { first: limit }, HEADERS);
+      return response.depositeds as DepositEvent[];
+    },
+    staleTime: 15 * 1000, // 15秒
+    refetchInterval: 15 * 1000, // 15秒自动刷新
+  });
+}
+
+// 充值金额设置记录Hook
+export function useDepositAmountSets(limit: number = 20) {
+  return useQuery({
+    queryKey: ['depositAmountSets', limit],
+    queryFn: async () => {
+      const response = await request(SUBGRAPH_URL, DEPOSIT_AMOUNT_SETS_QUERY, { first: limit }, HEADERS);
+      return response.depositAmountSets as any[];
+    },
+    staleTime: 60 * 1000, // 1分钟
+    refetchInterval: 60 * 1000, // 1分钟自动刷新
+  });
+}
+
+// 分钟级聚合数据Hook
+export function useMinuteStats(limit: number = 100) {
+  return useQuery({
+    queryKey: ['minuteStats', limit],
+    queryFn: async () => {
+      const response = await request(SUBGRAPH_URL, MINUTE_STATS_QUERY, { first: limit }, HEADERS);
+      return response.minuteStats as MinuteStats[];
+    },
+    staleTime: 30 * 1000, // 30秒
+    refetchInterval: 30 * 1000, // 30秒自动刷新
+  });
+}
+
+// 小时级聚合数据Hook
+export function useHourlyStats(limit: number = 168) { // 一周的小时数
+  return useQuery({
+    queryKey: ['hourlyStats', limit],
+    queryFn: async () => {
+      const response = await request(SUBGRAPH_URL, HOURLY_STATS_QUERY, { first: limit }, HEADERS);
+      return response.hourlyStats as HourlyStats[];
+    },
+    staleTime: 60 * 1000, // 1分钟
+    refetchInterval: 60 * 1000, // 1分钟自动刷新
+  });
+}
+
+// 所有充值记录（用于图表）
+export function useAllDeposits(limit: number = 1000) {
+  return useQuery({
+    queryKey: ['allDeposits', limit],
+    queryFn: async () => {
+      try {
+        const response = await request(SUBGRAPH_URL, ALL_DEPOSITS_QUERY, { first: limit }, HEADERS);
+        console.log('All deposits response:', response);
+        return response.depositeds as DepositEvent[];
+      } catch (error) {
+        console.warn('All deposits query failed:', error);
+        return [];
+      }
+    },
+    staleTime: 30 * 1000, // 30秒
+    refetchInterval: 30 * 1000, // 30秒自动刷新
+    retry: 1, // 重试一次
+  });
+}
+
+// 图表数据处理Hook
+export function useChartData(deposits: DepositEvent[] | undefined): ChartDataPoint[] {
+  return deposits?.map(deposit => ({
+    timestamp: parseInt(deposit.timestamp) * 1000,
+    value: parseFloat(deposit.amount) / 1e18,
+    label: `#${deposit.depositNumber}: ${formatAmount(deposit.amount)}`,
+  })) || [];
+}
+
+// 实时数据Hook（组合多个查询）
+export function useRealTimeData() {
+  const globalStats = useGlobalStats();
+  const recentDeposits = useRecentDeposits(5);
+
+  return {
+    globalStats: globalStats.data,
+    recentDeposits: recentDeposits.data || [],
+    loading: globalStats.isLoading || recentDeposits.isLoading,
+    error: globalStats.error || recentDeposits.error,
+    isError: globalStats.isError || recentDeposits.isError,
+  };
+}
+
+// 导出工具函数
+export { formatAddress, formatAmount, formatTime };

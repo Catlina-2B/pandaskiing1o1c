@@ -9,7 +9,7 @@ import { useAllDeposits, useGlobalStats, formatAmount } from "@/hooks/useSubgrap
 import { useDeposit } from "@/hooks/useDeposit";
 
 // 配置：当总充值金额达到此阈值时显示高价提示
-const HIGH_PRICE_THRESHOLD = 5; // USDT
+const HIGH_PRICE_THRESHOLD = 500; // USDT
 
 export default function PandaSkiingPage() {
   const { open } = useAppKit();

@@ -7,7 +7,6 @@ import { formatUnits } from "viem";
 import { useSystemTheme } from "@/hooks/useSystemTheme";
 import {
   useAllDeposits,
-  useGlobalStats,
   formatAmount,
 } from "@/hooks/useSubgraphData";
 import { useDeposit } from "@/hooks/useDeposit";
@@ -36,12 +35,6 @@ export default function PandaSkiingPage() {
 
   const isDark = theme === "dark";
 
-  // 获取 subgraph 数据（用于图表显示）
-  const {
-    data: globalStats,
-    isLoading: globalLoading,
-    error: globalError,
-  } = useGlobalStats();
   const {
     data: allDeposits,
     isLoading: depositsLoading,
@@ -76,10 +69,9 @@ export default function PandaSkiingPage() {
       : null;
 
   // 使用合约数据 > 全局统计数据 > 计算出的统计数据
-  const stats = contractStats || globalStats || computedStats;
+  const stats = contractStats || computedStats;
 
   // 记录错误信息用于调试
-  if (globalError) console.log("Global stats error:", globalError);
   if (depositsError) console.log("Deposits error:", depositsError);
 
   // 判断是否显示高价提示

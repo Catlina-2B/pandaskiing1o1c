@@ -2,12 +2,12 @@ import { PROGRESSIVE_DEPOSIT_ABI as ProgressiveDepositABI } from './abi';
 
 // 合约地址配置
 export const CONTRACT_ADDRESSES = {
-  bsc: '0xd24C4Ae72802fDB039cBB262CA46bB54807f8D2D', // BSC 测试网或主网
+  bsc: '0x599374035c70e0cCA58D627e4Ef6adb694a3DE41', // BSC 测试网或主网
 } as const;
 
 // ERC20 代币地址配置 (示例，需要根据实际情况修改)
 export const TOKEN_ADDRESSES = {
-  bsc: '0xb34cb82e35140443e8446840f05b1b36669cae95', // USDT on BSC
+  bsc: '0x55d398326f99059fF775485246999027B3197955', // USDT on BSC
 } as const;
 
 // 合约 ABI

@@ -9,8 +9,8 @@ export const SUBGRAPH_CONFIG = {
   
   // BSC 主网 (The Graph Studio)
   bsc: {
-    endpoint: 'https://gateway.thegraph.com/api/subgraphs/id/CJii85UQ3orQ6E31VjfLezvF1Ng6kuPAEkR4fLRg1xTB',
-    name: 'progressive-deposit-bsc'
+    endpoint: 'https://api.studio.thegraph.com/query/1714807/panda-skiing-one-on-one-call/version/latest',
+    name: 'panda-skiing-one-on-one-call'
   },
   
   // BSC 测试网

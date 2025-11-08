@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { gql, request } from 'graphql-request';
 import { useState, useEffect, useCallback } from 'react';
 import { 
-  GlobalStats, 
   MinuteStats, 
   HourlyStats, 
   DailyStats,
@@ -16,25 +15,10 @@ import {
 import { getSubgraphEndpoint } from '@/config/subgraph';
 
 // Subgraph 配置
-const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/91526/progressive-deposit/version/latest';
+const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/1714807/panda-skiing-one-on-one-call/version/latest';
 const HEADERS = { Authorization: 'Bearer e929879d76332fee0b1fad17b611f0ee' };
 
 // GraphQL 查询 - 根据实际 schema 定义
-// 简化的全局统计查询，尝试不同的方法
-const GLOBAL_STATS_QUERY = gql`
-  query GetGlobalStats {
-    globalStats(first: 5) {
-      id
-      totalDeposits
-      totalAmount
-      totalWithdrawn
-      uniqueDepositors
-      lastDepositTimestamp
-      lastUpdateTimestamp
-    }
-  }
-`;
-
 const RECENT_DEPOSITS_QUERY = gql`
   query GetRecentDeposits($first: Int!) {
     depositeds(first: $first, orderBy: timestamp, orderDirection: desc) {
@@ -130,31 +114,6 @@ function formatTime(timestamp: string): string {
 }
 
 // 使用 React Query 的 Hooks
-
-// 全局统计数据Hook
-export function useGlobalStats() {
-  return useQuery({
-    queryKey: ['globalStats'],
-    queryFn: async () => {
-      try {
-        const response = await request(SUBGRAPH_URL, GLOBAL_STATS_QUERY, {}, HEADERS);
-        console.log('Global stats response:', response);
-        // globalStats 可能返回数组或单个对象
-        if (Array.isArray(response.globalStats)) {
-          return response.globalStats.length > 0 ? response.globalStats[0] as GlobalStats : null;
-        } else {
-          return response.globalStats as GlobalStats | null;
-        }
-      } catch (error) {
-        console.warn('Global stats query failed:', error);
-        return null;
-      }
-    },
-    staleTime: 30 * 1000, // 30秒
-    refetchInterval: 30 * 1000, // 30秒自动刷新
-    retry: false, // 不重试，因为可能还没有全局统计数据
-  });
-}
 
 // 最近充值记录Hook
 export function useRecentDeposits(limit: number = 10) {
@@ -303,15 +262,13 @@ export function useChartData(options: { timeRange: TimeRange; dataType: ChartDat
 
 // 实时数据Hook（组合多个查询）
 export function useRealTimeData() {
-  const globalStats = useGlobalStats();
   const recentDeposits = useRecentDeposits(5);
 
   return {
-    globalStats: globalStats.data,
     recentDeposits: recentDeposits.data || [],
-    loading: globalStats.isLoading || recentDeposits.isLoading,
-    error: globalStats.error ? (globalStats.error as Error).message : recentDeposits.error ? (recentDeposits.error as Error).message : null,
-    isError: globalStats.isError || recentDeposits.isError,
+    loading: recentDeposits.isLoading,
+    error: recentDeposits.error ? (recentDeposits.error as Error).message : null,
+    isError: recentDeposits.isError,
   };
 }
 

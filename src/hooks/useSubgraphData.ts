@@ -15,8 +15,8 @@ import {
 import { getSubgraphEndpoint } from '@/config/subgraph';
 
 // Subgraph 配置
-const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/1714807/panda-skiing-one-on-one-call/version/latest';
-const HEADERS = { Authorization: 'Bearer e929879d76332fee0b1fad17b611f0ee' };
+const SUBGRAPH_URL = 'https://gateway.thegraph.com/api/subgraphs/id/AzfGD7sy29trgTjHshxWjo8mQwAVX38eijAJ9nssNW5j';
+const HEADERS = { Authorization: 'Bearer 898a9160a370c5fe1ca43fe52d9ccfec' };
 
 // GraphQL 查询 - 根据实际 schema 定义
 const RECENT_DEPOSITS_QUERY = gql`

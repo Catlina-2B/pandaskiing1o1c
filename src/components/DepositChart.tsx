@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Button } from '@heroui/button';
-import { useChartData, useGlobalStats } from '@/hooks/useSubgraphData';
+import { useChartData } from '@/hooks/useSubgraphData';
 import { TimeRange, ChartDataType } from '@/types/subgraph';
 import { useSystemTheme } from '@/hooks/useSystemTheme';
 
@@ -41,7 +41,6 @@ export default function DepositChart({ className = '' }: DepositChartProps) {
   const [selectedTimeRange, setSelectedTimeRange] = useState<TimeRange>('1D');
   const [selectedDataType, setSelectedDataType] = useState<ChartDataType>('cumulativeAmount');
   
-  const { data: globalStats } = useGlobalStats();
   const { data: chartData, loading, error } = useChartData({
     timeRange: selectedTimeRange,
     dataType: selectedDataType,
@@ -134,31 +133,6 @@ export default function DepositChart({ className = '' }: DepositChartProps) {
               实时链上数据可视化
             </p>
           </div>
-
-          {/* 统计卡片 */}
-          {globalStats && (
-            <div
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl ${
-                isDark
-                  ? 'bg-green-500/20 text-green-400'
-                  : 'bg-green-100 text-green-600'
-              }`}
-            >
-              <div className="text-center">
-                <div className="text-xs font-medium">总充值</div>
-                <div className="text-lg font-bold">
-                  {formatValue(parseFloat(globalStats.totalAmount) / 1e18, 'cumulativeAmount')}
-                </div>
-              </div>
-              <div className="w-px h-8 bg-current opacity-30 mx-2" />
-              <div className="text-center">
-                <div className="text-xs font-medium">总次数</div>
-                <div className="text-lg font-bold">
-                  {parseInt(globalStats.totalDeposits).toLocaleString()}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* 控制按钮 */}

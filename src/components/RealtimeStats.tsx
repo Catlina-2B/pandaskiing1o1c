@@ -11,16 +11,16 @@ export default function RealtimeStats({ className = '' }: RealtimeStatsProps) {
   const { theme } = useSystemTheme();
   const isDark = theme === 'dark';
   
-  const { globalStats, loading, error } = useRealTimeData();
-  const { data: recentDeposits } = useRecentDeposits(5);
-  
+  const { recentDeposits: recentDepositsFromHook, loading, error } = useRealTimeData();
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   useEffect(() => {
-    if (globalStats) {
+    if (recentDepositsFromHook && recentDepositsFromHook.length > 0) {
       setLastUpdate(new Date());
     }
-  }, [globalStats]);
+  }, [recentDepositsFromHook]);
+
+  const recentDeposits = recentDepositsFromHook;
 
   // 格式化地址显示
   const formatAddress = (address: string): string => {
@@ -120,95 +120,6 @@ export default function RealtimeStats({ className = '' }: RealtimeStatsProps) {
             </span>
           </div>
         </div>
-
-        {/* 全局统计卡片 */}
-        {globalStats && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
-            <div
-              className={`p-3 md:p-4 rounded-lg md:rounded-xl text-center ${
-                isDark ? 'bg-gray-700/30' : 'bg-gray-100/50'
-              }`}
-            >
-              <div
-                className={`text-lg md:text-2xl font-bold ${
-                  isDark ? 'text-green-400' : 'text-green-600'
-                }`}
-              >
-                {formatAmount(globalStats.totalAmount)}
-              </div>
-              <div
-                className={`text-xs ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}
-              >
-                总充值金额
-              </div>
-            </div>
-
-            <div
-              className={`p-3 md:p-4 rounded-lg md:rounded-xl text-center ${
-                isDark ? 'bg-gray-700/30' : 'bg-gray-100/50'
-              }`}
-            >
-              <div
-                className={`text-lg md:text-2xl font-bold ${
-                  isDark ? 'text-blue-400' : 'text-blue-600'
-                }`}
-              >
-                {parseInt(globalStats.totalDeposits).toLocaleString()}
-              </div>
-              <div
-                className={`text-xs ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}
-              >
-                总充值次数
-              </div>
-            </div>
-
-            <div
-              className={`p-3 md:p-4 rounded-lg md:rounded-xl text-center ${
-                isDark ? 'bg-gray-700/30' : 'bg-gray-100/50'
-              }`}
-            >
-              <div
-                className={`text-lg md:text-2xl font-bold ${
-                  isDark ? 'text-purple-400' : 'text-purple-600'
-                }`}
-              >
-                {parseInt(globalStats.uniqueDepositors).toLocaleString()}
-              </div>
-              <div
-                className={`text-xs ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}
-              >
-                参与用户数
-              </div>
-            </div>
-
-            <div
-              className={`p-3 md:p-4 rounded-lg md:rounded-xl text-center ${
-                isDark ? 'bg-gray-700/30' : 'bg-gray-100/50'
-              }`}
-            >
-              <div
-                className={`text-lg md:text-2xl font-bold ${
-                  isDark ? 'text-yellow-400' : 'text-yellow-600'
-                }`}
-              >
-                {formatAmount(globalStats.totalWithdrawn)}
-              </div>
-              <div
-                className={`text-xs ${
-                  isDark ? 'text-gray-400' : 'text-gray-600'
-                }`}
-              >
-                已提取金额
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* 最近充值记录 */}
         <div>

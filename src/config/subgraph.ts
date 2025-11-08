@@ -9,7 +9,7 @@ export const SUBGRAPH_CONFIG = {
   
   // BSC 主网 (The Graph Studio)
   bsc: {
-    endpoint: 'https://api.studio.thegraph.com/query/progressive-deposit/progressive-deposit/version/latest',
+    endpoint: 'https://gateway.thegraph.com/api/subgraphs/id/CJii85UQ3orQ6E31VjfLezvF1Ng6kuPAEkR4fLRg1xTB',
     name: 'progressive-deposit-bsc'
   },
   

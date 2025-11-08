@@ -17,7 +17,7 @@ import { getSubgraphEndpoint } from '@/config/subgraph';
 
 // Subgraph 配置
 const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/91526/progressive-deposit/version/latest';
-const HEADERS = { Authorization: 'Bearer 2fc6b77f0f54ced68b9ebb7d695e549a' };
+const HEADERS = { Authorization: 'Bearer e929879d76332fee0b1fad17b611f0ee' };
 
 // GraphQL 查询 - 根据实际 schema 定义
 // 简化的全局统计查询，尝试不同的方法

@@ -165,8 +165,8 @@ export default function PandaSkiingPage() {
 
       {/* 主题切换和连接钱包按钮 */}
       <div
-        className={`absolute right-4 md:right-6 flex items-center gap-2 md:gap-3 z-40 transition-all duration-300 ${
-          showHighPriceAlert ? "top-16 md:top-20" : "top-4 md:top-6"
+        className={`pt-2 pr-2 justify-end flex items-center gap-2 md:gap-3 z-40 transition-all duration-300 ${
+          showHighPriceAlert ? "pt-26" : ""
         }`}
       >
         <Button
@@ -203,7 +203,7 @@ export default function PandaSkiingPage() {
         }`}
       >
         {/* 移动端和PC端右侧：介绍内容 */}
-        <div className="flex-1 lg:order-2 p-4 lg:p-8 flex flex-col lg:max-h-screen lg:overflow-y-auto">
+        <div className="flex-1 lg:order-2 p-2 lg:p-2 flex flex-col lg:max-h-screen lg:overflow-y-auto">
           <div className="w-full">
             <div
               className={`border font-mono text-xs lg:text-sm leading-relaxed ${
